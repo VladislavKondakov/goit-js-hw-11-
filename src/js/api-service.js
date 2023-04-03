@@ -12,7 +12,6 @@ export default class NewsApiService {
       method: 'get',
       url: 'https://pixabay.com/api/',
       params: {
-        // ключ с сайта pixabay
         key: '34936731-737dc6cbc5148f9f58e69ebf4',
         q: `${this.searchQuery}`,
         image_type: 'photo',
@@ -24,15 +23,26 @@ export default class NewsApiService {
     };
     try {
       const response = await axios(axiosOptions);
-
+  
       const data = response.data;
-
+  
+      if (data.hits.length < this.PER_PAGE) {
+        
+        this.disableLoadMoreButton();
+      }
+  
       this.incrementPage();
       return data;
     } catch (error) {
       console.error(error);
     }
   }
+  
+  disableLoadMoreButton() {
+    const loadMoreButton = document.querySelector('#load-more-button');
+    loadMoreButton.disabled = true;
+  }
+  
 
   incrementPage() {
     this.page += 1;

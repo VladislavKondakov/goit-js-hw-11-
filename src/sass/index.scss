@@ -1,0 +1,16 @@
+.gallery{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    margin-top: 40px;
+}
+.photo-img{
+    width:300px ;
+    height: 250px;
+}
+.info-item{
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
