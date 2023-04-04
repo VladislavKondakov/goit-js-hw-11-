@@ -23,26 +23,26 @@ export default class NewsApiService {
     };
     try {
       const response = await axios(axiosOptions);
-  
+
       const data = response.data;
-  
+
       if (data.hits.length < this.PER_PAGE) {
-        
         this.disableLoadMoreButton();
       }
-  
+
       this.incrementPage();
       return data;
     } catch (error) {
       console.error(error);
     }
   }
-  
+
   disableLoadMoreButton() {
     const loadMoreButton = document.querySelector('#load-more-button');
-    loadMoreButton.disabled = true;
+    if (loadMoreButton) {
+      loadMoreButton.disabled = true;
+    }
   }
-  
 
   incrementPage() {
     this.page += 1;
