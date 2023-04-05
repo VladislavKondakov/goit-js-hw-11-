@@ -37,7 +37,6 @@ function onSearch(e) {
 
   isShown = 0;
   fetchGallery();
-  onRenderGallery(hits);
 }
 
 function onLoadMore() {
@@ -46,7 +45,7 @@ function onLoadMore() {
 }
 
 async function fetchGallery() {
-  refs.loadMoreBtn.style.display = 'inline-block'
+  refs.loadMoreBtn.style.display = 'inline-block';
 
   const r = await newsApiService.fetchGallery();
   const { hits, total } = r;
@@ -57,11 +56,8 @@ async function fetchGallery() {
       `Sorry, there are no images matching your search query. Please try again.`
     );
     refs.loadMoreBtn.classList.add('is-hidden');
-    return;
+    return { hits: [] }; // return empty array if no hits
   }
-
-  onRenderGallery(hits);
-  isShown += hits.length;
 
   if (isShown < total) {
     Notify.success(`Hooray! We found ${total} images !!!`);
@@ -70,8 +66,12 @@ async function fetchGallery() {
 
   if (isShown >= total) {
     Notify.info("We're sorry, but you've reached the end of search results.");
+    refs.loadMoreBtn.classList.add('is-hidden');
   }
+
+  return { hits };
 }
+
 
 function onRenderGallery(elements) {
   const markup = elements
@@ -113,4 +113,21 @@ function onRenderGallery(elements) {
     .join('');
   refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
+}    
+
+async function onSearch(e) {
+  e.preventDefault();
+
+  refs.galleryContainer.innerHTML = '';
+  newsApiService.query = e.currentTarget.elements.searchQuery.value.trim();
+  newsApiService.resetPage();
+
+  if (newsApiService.query === '') {
+    Notify.warning('Please, fill the main field');
+    return;
+  }
+
+  isShown = 0;
+  const { hits } = await fetchGallery();
+  onRenderGallery(hits);
 }

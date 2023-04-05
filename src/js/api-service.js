@@ -4,9 +4,11 @@ export default class NewsApiService {
   constructor() {
     this.searchQuery = '';
     this.page = 1;
-    // cделал 39 потому что так красивее, я знаю что в задании 40.
-    this.PER_PAGE = 39;
+    this.PER_PAGE = 40;
+    this.totalHits = 0;
+    this.totalPages = 0;
   }
+
   async fetchGallery() {
     const axiosOptions = {
       method: 'get',
@@ -23,8 +25,9 @@ export default class NewsApiService {
     };
     try {
       const response = await axios(axiosOptions);
-
       const data = response.data;
+      this.totalHits = data.totalHits;
+      this.totalPages = Math.ceil(data.totalHits / this.PER_PAGE);
 
       if (data.hits.length < this.PER_PAGE) {
         this.disableLoadMoreButton();
@@ -41,6 +44,13 @@ export default class NewsApiService {
     const loadMoreButton = document.querySelector('#load-more-button');
     if (loadMoreButton) {
       loadMoreButton.disabled = true;
+    }
+  }
+
+  enableLoadMoreButton() {
+    const loadMoreButton = document.querySelector('#load-more-button');
+    if (loadMoreButton) {
+      loadMoreButton.disabled = false;
     }
   }
 
@@ -62,5 +72,11 @@ export default class NewsApiService {
 
   set query(newQuery) {
     this.searchQuery = newQuery;
+    this.resetPage();
+    this.resetEndOfHits();
+  }
+
+  shouldRenderLoadMoreButton() {
+    return this.page < this.totalPages;
   }
 }
