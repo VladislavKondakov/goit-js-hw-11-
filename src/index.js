@@ -8,6 +8,7 @@ const refs = {
   galleryContainer: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
 };
+
 refs.loadMoreBtn.style.display = 'none'
 
 let isShown = 0;
@@ -21,69 +22,35 @@ const options = {
   root: null,
   threshold: 0.3,
 };
+
 const observer = new IntersectionObserver(onLoadMore, options);
-
-function onSearch(e) {
-  e.preventDefault();
-
-  refs.galleryContainer.innerHTML = '';
-  newsApiService.query = e.currentTarget.elements.searchQuery.value.trim();
-  newsApiService.resetPage();
-
-  if (newsApiService.query === '') {
-    Notify.warning('Please, fill the main field');
-    return;
-  }
-
-  isShown = 0;
-  fetchGallery();
-}
-
-function onLoadMore() {
-  newsApiService.incrementPage();
-  fetchGallery();
-}
 
 async function fetchGallery() {
   refs.loadMoreBtn.style.display = 'inline-block';
-
   const r = await newsApiService.fetchGallery();
-  const { hits, total, page, perPage } = r;
+  const { hits, total } = r;
   isShown += hits.length;
 
   if (!hits.length) {
     Notify.failure(
       `Sorry, there are no images matching your search query. Please try again.`
     );
-    refs.loadMoreBtn.style.display = 'none';
-    return { hits: [] }; 
+    refs.loadMoreBtn.classList.add('is-hidden');
+    return { hits: [] }; // return empty array if no hits
   }
 
   if (isShown < total) {
     Notify.success(`Hooray! We found ${total} images !!!`);
-    refs.loadMoreBtn.style.display = 'inline-block';
+    refs.loadMoreBtn.classList.remove('is-hidden');
   }
 
-  if (isShown >= total) {
+  if (isShown >= total || !hits.length) {
     Notify.info("We're sorry, but you've reached the end of search results.");
-    refs.loadMoreBtn.style.display = 'none';
-  }
-
-  
-  if (r.error) {
-    refs.loadMoreBtn.style.display = 'none';
-    return { hits: [] }; 
-  }
-
-  
-  if (page >= Math.ceil(total / perPage)) {
-    refs.loadMoreBtn.style.display = 'none';
+    refs.loadMoreBtn.classList.add('is-hidden');
   }
 
   return { hits };
 }
-
-
 
 function onRenderGallery(elements) {
   const markup = elements
@@ -125,7 +92,7 @@ function onRenderGallery(elements) {
     .join('');
   refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
-}    
+}
 
 async function onSearch(e) {
   e.preventDefault();
@@ -140,6 +107,11 @@ async function onSearch(e) {
   }
 
   isShown = 0;
+  const { hits } = await fetchGallery();
+  onRenderGallery(hits);
+}
+
+async function onLoadMore() {
   const { hits } = await fetchGallery();
   onRenderGallery(hits);
 }

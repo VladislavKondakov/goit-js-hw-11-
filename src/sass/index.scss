@@ -14,3 +14,9 @@
     justify-content: center;
     gap: 15px;
 }
+.is-hidden {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 300ms, opacity 300ms;
+  }
+  
