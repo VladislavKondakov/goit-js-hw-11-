@@ -48,29 +48,41 @@ async function fetchGallery() {
   refs.loadMoreBtn.style.display = 'inline-block';
 
   const r = await newsApiService.fetchGallery();
-  const { hits, total } = r;
+  const { hits, total, page, perPage } = r;
   isShown += hits.length;
 
   if (!hits.length) {
     Notify.failure(
       `Sorry, there are no images matching your search query. Please try again.`
     );
-    refs.loadMoreBtn.classList.add('is-hidden');
-    return { hits: [] }; // return empty array if no hits
+    refs.loadMoreBtn.style.display = 'none';
+    return { hits: [] }; 
   }
 
   if (isShown < total) {
     Notify.success(`Hooray! We found ${total} images !!!`);
-    refs.loadMoreBtn.classList.remove('is-hidden');
+    refs.loadMoreBtn.style.display = 'inline-block';
   }
 
   if (isShown >= total) {
     Notify.info("We're sorry, but you've reached the end of search results.");
-    refs.loadMoreBtn.classList.add('is-hidden');
+    refs.loadMoreBtn.style.display = 'none';
+  }
+
+  
+  if (r.error) {
+    refs.loadMoreBtn.style.display = 'none';
+    return { hits: [] }; 
+  }
+
+  
+  if (page >= Math.ceil(total / perPage)) {
+    refs.loadMoreBtn.style.display = 'none';
   }
 
   return { hits };
 }
+
 
 
 function onRenderGallery(elements) {
