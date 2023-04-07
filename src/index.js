@@ -9,7 +9,12 @@ const refs = {
   loadMoreBtn: document.querySelector('.load-more'),
 };
 
-refs.loadMoreBtn.style.display = 'none'
+// Hide the "Load More" button before loading all photos
+const loadMoreButton = document.querySelector('#load-more-button');
+if (loadMoreButton) {
+  loadMoreButton.disabled = true;
+  loadMoreButton.classList.add('is-hidden');
+}
 
 let isShown = 0;
 const newsApiService = new NewsApiService();
@@ -28,6 +33,11 @@ const observer = new IntersectionObserver(onLoadMore, options);
 async function fetchGallery() {
   refs.loadMoreBtn.style.display = 'inline-block';
   const r = await newsApiService.fetchGallery();
+  if (!r) {
+    Notify.failure(`Failed to fetch gallery data`);
+    refs.loadMoreBtn.classList.add('is-hidden');
+    return { hits: [] }; // return empty array if r is null
+  }
   const { hits, total } = r;
   isShown += hits.length;
 
@@ -51,6 +61,7 @@ async function fetchGallery() {
 
   return { hits };
 }
+
 
 function onRenderGallery(elements) {
   const markup = elements

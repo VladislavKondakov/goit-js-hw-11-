@@ -7,9 +7,14 @@ export default class NewsApiService {
     this.PER_PAGE = 40;
     this.totalHits = 0;
     this.totalPages = 0;
+    this.endOfHits = false;
   }
 
   async fetchGallery() {
+    if (this.endOfHits) {
+      return null;
+    }
+    
     const axiosOptions = {
       method: 'get',
       url: 'https://pixabay.com/api/',
@@ -27,10 +32,13 @@ export default class NewsApiService {
       const response = await axios(axiosOptions);
       const data = response.data;
       this.totalHits = data.totalHits;
-      this.totalPages = Math.ceil(data.totalHits / this.PER_PAGE);
+      this.totalPages = this.countTotalPages();
 
-      if (data.hits.length < this.PER_PAGE) {
+      if (this.shouldRenderLoadMoreButton()) {
+        this.enableLoadMoreButton();
+      } else {
         this.disableLoadMoreButton();
+        this.endOfHits = true;
       }
 
       this.incrementPage();
@@ -40,10 +48,15 @@ export default class NewsApiService {
     }
   }
 
+  countTotalPages() {
+    return Math.ceil(this.totalHits / this.PER_PAGE);
+  }
+
   disableLoadMoreButton() {
     const loadMoreButton = document.querySelector('#load-more-button');
     if (loadMoreButton) {
       loadMoreButton.disabled = true;
+      loadMoreButton.classList.add('is-hidden');
     }
   }
 
@@ -51,6 +64,7 @@ export default class NewsApiService {
     const loadMoreButton = document.querySelector('#load-more-button');
     if (loadMoreButton) {
       loadMoreButton.disabled = false;
+      loadMoreButton.classList.remove('is-hidden');
     }
   }
 
@@ -77,6 +91,6 @@ export default class NewsApiService {
   }
 
   shouldRenderLoadMoreButton() {
-    return this.page < this.totalPages;
+    return !this.endOfHits && this.page < this.totalPages;
   }
 }
